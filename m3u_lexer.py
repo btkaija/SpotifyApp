@@ -24,7 +24,7 @@ def read_m3u_playlist(playlist_name, print_songs):
             file_path = f.readline().strip()
             songs.append( file_name + " XXX " + file_path)
 
-            print(file_path)
+            #print(file_path)
 
     print ('Found ', len(songs) , 'songs in the playlist ', playlist_name)
     if (print_songs):
