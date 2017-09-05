@@ -13,6 +13,16 @@ def GetAlbumDate(sp, album_id):
     return album_info['release_date']
 
 def PromptUserForSong(result_list):
+    for i in range(0, len(result_list)) :
+        song_name = result_list[i]['name']
+        song_artists = [artist['name'] for artist in result_list[i]['artists']]
+        song_id = result_list[i]['id']
+        song_album = result_list[i]['album']
+        #song_album_date = GetAlbumDate(sp, song_album['id'])
+        song_album_name = song_album['name']
+        print("Song #"+str(i)+" found -->", song_id, '-', song_name, '-',
+            song_artists, '-', song_album_name)
+
     if (len(result_list)):
         isGoodInput = False
     else:
@@ -46,12 +56,20 @@ def init_spotify_connection():
         sys.exit()
     return util.prompt_for_user_token(username, scope, client_id, client_secret, my_callback)
 
+def get_playlist():
+    if len(sys.argv) > 2:
+        playlist_name = sys.argv[2]
+    else:
+        print("Please enter the playlist name as the second argument.")
+
+    return m3u_lexer.read_m3u_playlist(playlist_name, False)
+
 
 ##begin main function
 
 print("Parsing the playlist for songs")
 
-songs = m3u_lexer.read_m3u_playlist('Best.m3u', False)
+songs = get_playlist()
 song_path = [song.split(" XXX ")[1] for song in songs]
 song_names = [song.split(" XXX ")[0].split('-')[1] for song in songs]
 song_artists = [song.split(" XXX ")[0].split('-')[0] for song in songs]
@@ -63,19 +81,18 @@ if token:
     sp = spotipy.Spotify(auth=token)
     print("Searching for",songs[0], '\n')
     results = sp.search(song_names[0] +  " " + song_artists[0])
-    result_list = results['tracks']['items']
-    for i in range(0, len(result_list)) :
-        song_name = result_list[i]['name']
-        song_artists = [artist['name'] for artist in result_list[i]['artists']]
-        song_id = result_list[i]['id']
-        song_album = result_list[i]['album']
-        #song_album_date = GetAlbumDate(sp, song_album['id'])
-        song_album_name = song_album['name']
-        print("Song #"+str(i)+" found -->", song_name, '-',
-            song_artists, '-', song_album_name)
-
-    index_selected = PromptUserForSong(result_list)
-    print("selected song number", index_selected, "with id", song_id)
-
+    if results['tracks']['total'] != 0:
+        result_list = results['tracks']['items']
+        index_selected = PromptUserForSong(result_list)
+        print("selected song number", index_selected)
+    else:
+        print("Searching for song name only.")
+        results = sp.search(song_names[0])
+        if results['tracks']['total'] != 0:
+            result_list = results['tracks']['items']
+            index_selected = PromptUserForSong(result_list)
+            print("selected song number", index_selected)
+        else:
+            print("No songs found.")
 else:
     print("Can't get token for", username)

@@ -20,7 +20,7 @@ def read_m3u_playlist(playlist_name, print_songs):
     for line in f:
         #print("line -->  ", line)
         if (line.find('#EXTINF') != -1):
-            file_name = line.split(',')[1].strip()
+            file_name = line.split(',', 1)[1].strip()
             file_path = f.readline().strip()
             songs.append( file_name + " XXX " + file_path)
 
